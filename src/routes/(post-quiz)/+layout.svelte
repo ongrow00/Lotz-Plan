@@ -4,6 +4,7 @@
 	import { fly } from 'svelte/transition';
 	import StepProgressBar from '$lib/components/quiz/StepProgressBar.svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
+	import { postQuizStore } from '$lib/stores/post-quiz.store';
 
 	let { children } = $props();
 
@@ -32,6 +33,15 @@
 	// Contagem continua do quiz (mr-5 = 13): nome=14, whatsapp=15, results=16
 	const POST_QUIZ_COUNTER_START = 13;
 	const headerCounter = $derived(stepIndex >= 1 ? POST_QUIZ_COUNTER_START + stepIndex : 0);
+
+	// WhatsApp obrigatório: só avança com telefone válido (10 ou 11 dígitos: DDD + número)
+	const whatsappDigits = $derived.by(() => {
+		const raw = ($postQuizStore.whatsapp || '').replace(/\D/g, '');
+		const withoutCountry = raw.startsWith('55') && raw.length > 2 ? raw.slice(2) : raw;
+		return withoutCountry.slice(0, 11);
+	});
+	const hasValidWhatsapp = $derived(whatsappDigits.length >= 10);
+	const canAdvance = $derived(!isWhatsappPage || hasValidWhatsapp);
 </script>
 
 <div class="min-h-screen flex flex-col bg-bg">
@@ -110,7 +120,8 @@
 		<button
 			type="button"
 			onclick={() => goto(nextUrl)}
-			class="w-full h-[60px] flex items-center justify-center gap-2 rounded-2xl font-bold text-base bg-accent text-bg transition-all duration-200 active:scale-[0.98] hover:bg-accent-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg {isWhatsappPage ? 'post-quiz-cta' : ''}"
+			disabled={!canAdvance}
+			class="w-full h-[60px] flex items-center justify-center gap-2 rounded-2xl font-bold text-base bg-accent text-bg transition-all duration-200 active:scale-[0.98] hover:bg-accent-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:pointer-events-none {isWhatsappPage ? 'post-quiz-cta' : ''}"
 		>
 			{#if isWhatsappPage}
 				<span>Desbloquear</span>
@@ -136,15 +147,22 @@
 		grid-template-columns: 1fr;
 		flex: 1;
 		min-height: 0;
+		width: 100%;
 	}
 	.content-transition-root > * {
 		grid-row: 1;
 		grid-column: 1;
+		min-width: 0;
+		justify-self: center;
 	}
 	.content-transition-slot {
 		display: flex;
 		flex-direction: column;
+		align-items: stretch;
 		overflow: visible;
+		width: 100%;
+		max-width: 32rem;
+		box-sizing: border-box;
 	}
 
 	.post-quiz-cta {

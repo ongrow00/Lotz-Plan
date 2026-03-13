@@ -182,7 +182,7 @@
 	<title>Seus Resultados | Lotz</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4 text-center">
+<div class="flex flex-col gap-8 w-full min-w-0 text-center">
 	<!-- Faixa fixa: desconto + countdown, aparece após 50px de scroll com transição suave; clique leva ao bloco de preço -->
 	<button
 		type="button"
@@ -229,7 +229,7 @@
 		alt="Assista o vídeo para acessar seu protocolo"
 		class="w-full max-w-md mx-auto rounded-2xl"
 	/>
-	<h2 class="text-2xl font-extrabold text-heading leading-6 pt-[50px] px-4 text-center">
+	<h2 class="text-2xl font-extrabold text-heading leading-6 text-center">
 		{#if name.trim()}
 			<span class="text-accent">{name.trim()}</span>, seu protocolo
 		{:else}
@@ -263,14 +263,14 @@
 		</div>
 	{/if}
 
-	<div class="flex flex-col gap-4 pt-[50px]">
+	<div class="flex flex-col gap-4">
 		<div class="flex justify-center">
 			<AvatarStack initials={nameInitials} size="md" />
 		</div>
 		<h2 class="text-2xl font-extrabold text-heading leading-6">
 			Acesse seu protocolo para ter resultados <span class="text-accent">2.5X</span> mais rápido.
 		</h2>
-		<p class="text-sm text-body leading-[14px] max-w-md mx-auto pb-[25px]">
+		<p class="text-sm text-body leading-[14px] max-w-md mx-auto">
 			Você recebe todos esses itens ao contratar seu protocolo para emagrecer agora.
 		</p>
 	</div>
@@ -278,7 +278,7 @@
 	<!-- Price Card: um único bloco verde (borda + fundo) com conteúdo arredondado em cima e embaixo -->
 	<div
 		id="bloco-preco"
-		class="bloco-preco-shimmer relative w-[94%] mx-auto flex flex-col text-left rounded-2xl border-[2px] border-accent bg-accent overflow-hidden"
+		class="bloco-preco-shimmer relative w-full flex flex-col text-left rounded-2xl border-[2px] border-accent bg-accent overflow-hidden"
 	>
 		<div class="flex flex-col gap-5 p-5 mx-0.5 mt-0.5 mb-0.5 rounded-2xl overflow-hidden border border-line/30 bg-surface">
 			<!-- Header: título + 12x de acima do preço + R$33,12 e R$597 na mesma linha -->
@@ -469,9 +469,9 @@
 	<img
 		src="/payment-methods.png"
 		alt="Formas de pagamento: Pix, Apple Pay, Google Pay, Mastercard, Visa e outros"
-		class="w-[94%] mx-auto h-auto object-contain"
+		class="w-full h-auto object-contain"
 	/>
-	<h2 class="text-2xl font-extrabold text-heading leading-6 pt-[50px] px-4 text-center">
+	<h2 class="text-2xl font-extrabold text-heading leading-6 text-center">
 		Como serão os próximos passos a partir daqui.
 	</h2>
 
@@ -530,7 +530,7 @@
 		</div>
 	</div>
 
-	<h2 class="text-2xl font-extrabold text-heading leading-6 pt-[50px] px-4 text-center">
+	<h2 class="text-2xl font-extrabold text-heading leading-6 text-center">
 		Veja o resultado de algumas pessoas que aplicaram o protocolo Lotz
 	</h2>
 
@@ -538,7 +538,7 @@
 
 	<!-- Bloco de garantia 7 dias -->
 	<div
-		class="mt-[50px] w-full rounded-2xl bg-[#1B1B1E] px-4 py-6 text-left"
+		class="w-full rounded-2xl bg-[#1B1B1E] px-4 py-6 text-left"
 		role="region"
 		aria-labelledby="garantia-heading"
 	>
@@ -560,23 +560,30 @@
 	</div>
 
 	<!-- Perguntas Frequentes -->
-	<section class="mt-[50px] w-full flex flex-col gap-4 text-center" aria-labelledby="faq-heading">
-		<h2 id="faq-heading" class="text-2xl font-extrabold text-heading leading-6 px-4">
+	<section class="w-full flex flex-col gap-4 text-center" aria-labelledby="faq-heading">
+		<h2 id="faq-heading" class="text-2xl font-extrabold text-heading leading-6">
 			Perguntas Frequentes
 		</h2>
-		<p class="text-sm text-body leading-[14px] max-w-md mx-auto px-4">
+		<p class="text-sm text-body leading-[14px] max-w-md mx-auto">
 			Aqui estão algumas das perguntas que mais recebemos em relação ao protocolo Lotz Para emagrecer.
 		</p>
 		<div class="w-full flex flex-col text-left border-t border-line/50">
-			{#each Array(5) as _, i}
+			{#each [
+				{ q: 'Isso é só mais um curso ou planilha?', a: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' },
+				{ q: 'Vou ter acompanhamento individual mesmo?', a: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' },
+				{ q: 'Já tentei de tudo… por que isso seria diferente?', a: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' },
+				{ q: 'Funciona para quem tem pouco tempo?', a: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' },
+				{ q: 'Existe garantia se eu não tiver resultado?', a: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' },
+				{ q: 'Quais são as formas de pagamento?', a: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' }
+			] as faq, i}
 				<details
 					class="group border-b border-line/50"
-					aria-label="Pergunta frequente {i + 1}"
+					aria-label="{faq.q}"
 				>
 					<summary
 						class="flex items-center justify-between gap-3 list-none py-4 cursor-pointer text-heading text-base font-medium transition-colors [&::-webkit-details-marker]:hidden"
 					>
-						<span>Pergunta {i + 1}</span>
+						<span>{faq.q}</span>
 						<svg
 							class="w-5 h-5 shrink-0 text-body transition-transform duration-200 group-open:rotate-180"
 							aria-hidden="true"
@@ -587,8 +594,8 @@
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 						</svg>
 					</summary>
-					<div class="pb-4 text-sm text-body leading-none">
-						<p>Resposta do FAQ {i + 1}.</p>
+					<div class="pb-4 faq-answer text-body leading-relaxed">
+						<p>{faq.a}</p>
 					</div>
 				</details>
 			{/each}
@@ -597,6 +604,12 @@
 </div>
 
 <style>
+	/* Respostas do FAQ: mini texto (Pulse 1) */
+	.faq-answer {
+		font-size: 0.8125rem; /* 13px - Pulse 1 */
+		line-height: 1.4;
+	}
+
 	.timeline-dot-shimmer {
 		animation: timeline-dot-shimmer 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 	}
