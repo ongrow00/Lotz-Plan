@@ -87,13 +87,13 @@
 		{/if}
 	</header>
 
-	<main class="flex-1 flex flex-col min-h-0 overflow-hidden">
+	<main class="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden">
 		<div class="content-transition-root">
 			{#key pathname}
 				<div
 					in:fly={{ x: 30, duration: 260, delay: 40 }}
 					out:fly={{ x: -30, duration: 180 }}
-					class="content-transition-slot max-w-lg mx-auto w-full px-4 pt-6 {isCarregandoPage ? 'pb-8' : hideNavOnThisPage ? 'pb-8' : 'pb-32'}"
+					class="content-transition-slot max-w-lg mx-auto w-full px-4 pt-8 {isCarregandoPage ? 'pb-8' : hideNavOnThisPage ? 'pb-8' : 'pb-32'}"
 					style="pointer-events: auto;"
 				>
 					{@render children()}
@@ -142,6 +142,7 @@
 	.content-transition-slot {
 		display: flex;
 		flex-direction: column;
+		overflow: visible;
 	}
 
 	.post-quiz-cta {

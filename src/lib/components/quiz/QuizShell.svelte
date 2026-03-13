@@ -228,7 +228,7 @@
 {#if question}
 	<!-- Question content — extra padding when Next button is visible; info_medication: alinhado no topo -->
 	<div
-		class="flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-4 pt-6 {showNextButton ? 'pb-32' : 'pb-8'} {question.id === 'info_medication'
+		class="flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-4 pt-8 {showNextButton ? 'pb-32' : 'pb-8'} {question.id === 'info_medication'
 			? 'justify-start'
 			: question.type === 'microresult'
 				? 'justify-center'
