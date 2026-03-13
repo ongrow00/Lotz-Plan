@@ -122,7 +122,8 @@
 	</div>
 
 	{#if allDone}
-		<div class="fixed bottom-0 left-0 right-0 bg-bg px-4 pt-4 pb-8">
+		<div class="fixed bottom-0 left-0 right-0 bg-bg">
+			<div class="max-w-lg mx-auto w-full px-4 pt-4 pb-8">
 			<button
 				type="button"
 				onclick={() => goto('/nome')}
@@ -133,6 +134,7 @@
 					<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
 				</svg>
 			</button>
+			</div>
 		</div>
 	{/if}
 </div>

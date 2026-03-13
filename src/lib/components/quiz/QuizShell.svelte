@@ -74,18 +74,21 @@
 
 	const showNextButton = $derived(!isSingleChoiceQuestion);
 
-	/** Delay do botão na cascata (300ms entre cada item). Microresult: mr-1/mr-3 → 1200ms, mr-2 → 1200 ou 1500 se cardio, mr-5 → 900ms. */
+	/**
+	 * Delay do botão na cascata.
+	 * Conteúdo fica totalmente visível em ~1700ms (chart entra em 800ms, dur 900ms).
+	 * Pausa intencional de ~1100ms depois → botão aparece em 2800ms.
+	 * Isso cria um momento de "assimilação" antes do CTA surgir.
+	 */
 	const buttonCascadeDelay = $derived.by(() => {
 		if (question?.type !== 'microresult' || !question) return 0;
-		if (question.id === 'mr-1') return 4 * 300; // badge, título, parágrafo, chart
+		// mr-2 com cardio: cardio box entra em ~1400ms, botão espera mais 800ms
 		if (question.id === 'mr-2') {
 			const data = getMicroResultData(question.id, quiz.answers, quizConfig.questions);
 			const nexo = data?.nexo as { variant?: string; showCardioBox?: boolean } | undefined;
-			return nexo?.showCardioBox ? 5 * 300 : 4 * 300; // +1 se tiver caixa cardio
+			return nexo?.showCardioBox ? 3200 : 2800;
 		}
-		if (question.id === 'mr-3') return 4 * 300; // badge, título, parágrafo, chart
-		if (question.id === 'mr-5') return 3 * 300; // badge, título+subtitle, grid fatores
-		return 0;
+		return 2800; // mr-1, mr-3, mr-5
 	});
 
 	/** Lock para evitar duplo clique em Continuar */
@@ -320,7 +323,8 @@
 
 	<!-- Fixed bottom box — hidden for single choice. Botão entra na cascata (delay 300ms entre itens) em microresult. -->
 	{#if showNextButton}
-		<div class="fixed bottom-0 left-0 right-0 bg-bg px-4 pt-4 pb-8">
+		<div class="fixed bottom-0 left-0 right-0 bg-bg">
+			<div class="max-w-lg mx-auto w-full px-4 pt-4 pb-8">
 			<button
 				type="button"
 				onclick={() => handleNext()}
@@ -334,6 +338,7 @@
 					<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
 				</svg>
 			</button>
+			</div>
 		</div>
 	{/if}
 {/if}

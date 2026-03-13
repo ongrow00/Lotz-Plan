@@ -65,7 +65,8 @@
 </div>
 
 <!-- Botão fixo no rodapé — fora do div com transform para manter position:fixed real -->
-<div class="fixed bottom-0 left-0 right-0 z-[60] bg-bg px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+<div class="fixed bottom-0 left-0 right-0 z-[60] bg-bg">
+	<div class="max-w-lg mx-auto w-full px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
 	<button
 		type="button"
 		onclick={startQuiz}
@@ -93,6 +94,7 @@
 				Limitado a 1 por pessoa
 			</p>
 		</div>
+	</div>
 </div>
 
 <style>

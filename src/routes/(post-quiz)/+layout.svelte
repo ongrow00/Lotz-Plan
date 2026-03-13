@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { fly } from 'svelte/transition';
 	import StepProgressBar from '$lib/components/quiz/StepProgressBar.svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
 
@@ -34,7 +35,7 @@
 </script>
 
 <div class="min-h-screen flex flex-col bg-bg">
-	<header class="bg-bg px-4 pt-4 pb-3">
+	<header class="bg-bg px-4 pt-4 pb-3 {!isResultsPage ? 'sticky top-0 z-10' : ''}">
 		<div class="flex items-center justify-between mb-3">
 			{#if !hideNavOnThisPage && !isCarregandoPage}
 			<button
@@ -86,12 +87,24 @@
 		{/if}
 	</header>
 
-	<main class="flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-4 pt-6 {isCarregandoPage ? 'pb-8' : hideNavOnThisPage ? 'pb-8' : 'pb-32'}">
-		{@render children()}
+	<main class="flex-1 flex flex-col min-h-0 overflow-hidden">
+		<div class="content-transition-root">
+			{#key pathname}
+				<div
+					in:fly={{ x: 30, duration: 260, delay: 40 }}
+					out:fly={{ x: -30, duration: 180 }}
+					class="content-transition-slot max-w-lg mx-auto w-full px-4 pt-6 {isCarregandoPage ? 'pb-8' : hideNavOnThisPage ? 'pb-8' : 'pb-32'}"
+					style="pointer-events: auto;"
+				>
+					{@render children()}
+				</div>
+			{/key}
+		</div>
 	</main>
 
 	{#if !hideNavOnThisPage && !isCarregandoPage}
-	<div class="fixed bottom-0 left-0 right-0 bg-bg px-4 pt-4 pb-8">
+	<div class="fixed bottom-0 left-0 right-0 bg-bg">
+		<div class="max-w-lg mx-auto w-full px-4 pt-4 pb-8">
 		<button
 			type="button"
 			onclick={() => goto(nextUrl)}
@@ -109,11 +122,28 @@
 				</svg>
 			{/if}
 		</button>
+		</div>
 	</div>
 	{/if}
 </div>
 
 <style>
+	.content-transition-root {
+		display: grid;
+		grid-template-rows: 1fr;
+		grid-template-columns: 1fr;
+		flex: 1;
+		min-height: 0;
+	}
+	.content-transition-root > * {
+		grid-row: 1;
+		grid-column: 1;
+	}
+	.content-transition-slot {
+		display: flex;
+		flex-direction: column;
+	}
+
 	.post-quiz-cta {
 		position: relative;
 		overflow: hidden;
