@@ -1,0 +1,209 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import type { Question } from '$lib/data/types';
+	import { BODY_FAT_IMAGES } from '$lib/assets/body-fat-images';
+	import { BODY_FAT_STAGES, BODY_FAT_LABELS } from '$lib/assets/body-fat-config';
+	import arrowsBetweenUrl from '$lib/assets/body-fat/arrows-between.png';
+
+	/** Map gender answer to image prefix: gender-m -> H, gender-f -> M */
+	const GENDER_PREFIX: Record<string, string> = {
+		'gender-m': 'H',
+		'gender-f': 'M'
+	};
+
+	/** 6 estágios: índice 0..5 → imagem 1..6. Padrão: estágio do meio (índice 2). */
+	const STAGES = BODY_FAT_STAGES;
+	const DEFAULT_STAGE = 2;
+
+	interface Props {
+		question: Question;
+		genderAnswer: string | undefined;
+		selectedValue: string | undefined;
+		/** Estágio "antes" (esquerda). Se não informado, usa o mesmo do slider (ambos iguais). */
+		beforeStage?: number;
+		onSelect: (questionId: string, value: string) => void;
+	}
+
+	let { question, genderAnswer, selectedValue, beforeStage, onSelect }: Props = $props();
+
+	const prefix = $derived(GENDER_PREFIX[genderAnswer ?? ''] ?? 'H');
+
+	/** No step objetivo (body_fat_goal): default = um nível abaixo do anterior. Senão: DEFAULT_STAGE. */
+	const defaultStageForStep = $derived.by(() => {
+		if (question.id === 'body_fat_goal' && beforeStage !== undefined) {
+			return Math.max(0, beforeStage - 1);
+		}
+		return DEFAULT_STAGE;
+	});
+
+	/** Stage index 0..5 from stored value; fallback = defaultStageForStep. */
+	const stageIndex = $derived.by(() => {
+		if (selectedValue === undefined || selectedValue === '') return defaultStageForStep;
+		const n = parseInt(selectedValue, 10);
+		if (Number.isNaN(n)) return defaultStageForStep;
+		return Math.min(STAGES - 1, Math.max(0, n));
+	});
+
+	/** Step "agora": preencher default só no mount. Step "objetivo": usar $effect porque o mesmo componente é reutilizado ao trocar de pergunta, então onMount não roda de novo. */
+	onMount(() => {
+		if (question.id !== 'body_fat_goal' && (selectedValue === undefined || selectedValue === '')) {
+			onSelect(question.id, String(DEFAULT_STAGE));
+		}
+	});
+
+	$effect(() => {
+		if (question.id !== 'body_fat_goal' || beforeStage === undefined) return;
+		const empty = selectedValue === undefined || selectedValue === '';
+		if (!empty) return;
+		const oneBelow = Math.max(0, beforeStage - 1);
+		onSelect(question.id, String(oneBelow));
+	});
+
+	/** Map stage 0..5 to image key 1..6 (one stage per image). */
+	const imageKey = $derived(stageIndex + 1);
+	/** Estágio "antes" (esquerda): antes informado ou igual ao atual. */
+	const beforeStageClamped = $derived(
+		beforeStage !== undefined ? Math.min(STAGES - 1, Math.max(0, beforeStage)) : stageIndex
+	);
+	const beforeImageKey = $derived(beforeStageClamped + 1);
+	const afterImageKey = $derived(stageIndex + 1);
+	/** Label do estágio atual (ex: "11-12%") para o box abaixo do slider. */
+	const currentLabel = $derived(BODY_FAT_LABELS[stageIndex] ?? '');
+
+	function getImageSrc(key: number) {
+		return BODY_FAT_IMAGES[`${prefix}_${key}`] ?? '';
+	}
+
+	const beforeImageSrc = $derived(getImageSrc(beforeImageKey));
+	const afterImageSrc = $derived(getImageSrc(afterImageKey));
+	/** Step 2 (objetivo) = duas imagens (antes | setas | depois). Step 1 (agora) = uma imagem centralizada. */
+	const isGoalStep = $derived(question.id === 'body_fat_goal');
+	const currentImageSrc = $derived(getImageSrc(imageKey));
+
+	function handleSliderInput(e: Event) {
+		const target = e.currentTarget as HTMLInputElement;
+		onSelect(question.id, target.value);
+	}
+
+	function handleSliderChange(e: Event) {
+		const target = e.currentTarget as HTMLInputElement;
+		onSelect(question.id, target.value);
+	}
+</script>
+
+<div class="flex flex-col gap-4">
+	<div class="space-y-2">
+		<h2 class="text-2xl font-extrabold text-heading leading-tight">
+			{#if question.id === 'body_fat_level'}
+				Qual dessas imagens mais se <span class="text-accent">parece com você agora</span>?
+			{:else if question.id === 'body_fat_goal'}
+				Como você gostaria de <span class="text-accent">se enxergar quando alcançar o objetivo</span>?
+			{:else}
+				{question.text}
+			{/if}
+		</h2>
+		{#if question.subtext}
+			<p class="text-sm text-body leading-relaxed">{question.subtext}</p>
+		{/if}
+	</div>
+
+	{#if isGoalStep}
+		<!-- Step 2 (objetivo): mesma altura/espaçamento e tamanho de imagem que o step 1. -->
+		<div class="relative flex flex-1 min-h-0 items-center justify-between gap-0 w-full rounded-lg px-[10%] overflow-hidden pt-4 pb-4">
+			<!-- Background: setas centralizadas, 30% opacidade, visível atrás das imagens -->
+			<div
+				class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 mix-blend-screen pointer-events-none"
+				style="background-image: url('{arrowsBetweenUrl}'); background-size: 28vh auto;"
+				aria-hidden="true"
+			></div>
+			<div class="relative z-10 flex flex-1 min-h-0 items-center justify-start shrink-0">
+				{#if beforeImageSrc}
+					<div class="w-[162px] h-[110px] flex items-center justify-center shrink-0">
+						<img
+							src={beforeImageSrc}
+							alt="Silhueta antes"
+							class="w-full h-full object-contain object-center transition-opacity duration-200 grayscale"
+							loading="eager"
+						/>
+					</div>
+				{/if}
+			</div>
+			<div class="relative z-10 shrink-0 w-4" aria-hidden="true"></div>
+			<div class="relative z-10 flex flex-1 min-h-0 items-center justify-end shrink-0">
+				{#if afterImageSrc}
+					<div class="w-[162px] h-[110px] flex items-center justify-center shrink-0">
+						<img
+							src={afterImageSrc}
+							alt="Silhueta depois"
+							class="w-full h-full object-contain object-center transition-opacity duration-200"
+							loading="eager"
+						/>
+					</div>
+				{/if}
+			</div>
+		</div>
+	{:else}
+		<!-- Step 1 (agora): uma imagem centralizada, tamanho fixo para todas -->
+		<div class="flex flex-1 min-h-0 items-center justify-center pt-4 pb-4">
+			{#if currentImageSrc}
+				<div class="w-[162px] h-[110px] flex items-center justify-center shrink-0">
+					<img
+						src={currentImageSrc}
+						alt="Silhueta de referência"
+						class="w-full h-full object-contain object-center transition-opacity duration-200"
+						loading="eager"
+						onerror={(e) => {
+							const target = e.currentTarget;
+							target.style.display = 'none';
+							target.nextElementSibling?.classList.remove('hidden');
+						}}
+					/>
+					<div class="hidden w-full h-full flex items-center justify-center text-center text-sm text-muted px-2" data-fallback>
+						Estágio {imageKey}
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
+
+	<!-- Slider: 6 estágios — abaixo da imagem, sem sobrepor -->
+	<div class="relative flex flex-col gap-3 w-full mt-0">
+		<div class="relative w-full h-8 flex items-center">
+			<input
+				type="range"
+				min={0}
+				max={STAGES - 1}
+				step={1}
+				value={stageIndex}
+				oninput={handleSliderInput}
+				onchange={handleSliderChange}
+				aria-valuemin={0}
+				aria-valuemax={STAGES - 1}
+				aria-valuenow={stageIndex}
+				aria-label="Selecione o estágio que mais se parece com você"
+				class="body-fat-range relative z-0 w-full h-3 rounded-full appearance-none bg-line accent-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg px-[10%]"
+			/>
+			<!-- Pontinhos: 6 posições (10% a 90%); selecionado = branco no centro -->
+			<div class="absolute inset-0 flex items-center pointer-events-none z-10" aria-hidden="true">
+				{#each Array.from({ length: STAGES }, (_, i) => i) as i}
+					{@const pct = STAGES <= 1 ? 50 : 10 + (80 * i) / (STAGES - 1)}
+					<span
+						class="absolute rounded-full -translate-x-1/2 -translate-y-1/2 top-1/2 transition-colors {i === stageIndex ? 'bg-white w-[25px] h-[25px] ring-2 ring-accent' : 'bg-[#555] w-[6px] h-[6px]'}"
+						style="left: {pct}%"
+					></span>
+				{/each}
+			</div>
+		</div>
+		<!-- Legenda: menor % | Arraste para ajustar | maior % -->
+		<div class="flex items-center text-xs text-muted font-medium">
+			<span class="shrink-0 w-12 text-left">{BODY_FAT_LABELS[0]}</span>
+			<span class="flex-1 text-center">Arraste para ajustar</span>
+			<span class="shrink-0 w-12 text-right">{BODY_FAT_LABELS[STAGES - 1]}</span>
+		</div>
+		<!-- Percentual selecionado — só texto, sem bg nem borda -->
+		<div class="text-center mt-[25px] p-[25px]" aria-live="polite">
+			<span class="text-sm font-medium text-muted pr-2.5">Gordura corporal </span>
+			<span class="text-lg font-bold text-heading">{currentLabel}</span>
+		</div>
+	</div>
+</div>
